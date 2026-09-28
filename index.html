@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>多益特訓深度解析版</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #151d30;
+      --accent: #38bdf8;
+      --gold: #fbbf24;
+      --danger: #f43f5e;
+      --success: #10b981;
+      --text: #f1f5f9;
+      --sub: #94a3b8;
+      --border: #232f48;
+      --badge-bg: #1e293b;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      touch-action: manipulation;
+    }
+    .app {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      padding: 14px 14px max(14px, env(safe-area-inset-bottom));
+      justify-content: space-between;
+    }
+
+    /* 頂部切換 */
+    .tab-bar {
+      display: flex;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 6px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px 0;
+      border: none;
+      background: transparent;
+      color: var(--sub);
+      font-weight: 700;
+      font-size: 0.88rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0b0f19;
+    }
+
+    /* 狀態簡報 */
+    .status-card {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .status-num { font-size: 1.25rem; font-weight: 800; color: var(--gold); }
+    .status-label { font-size: 0.7rem; color: var(--sub); margin-top: 1px; }
+
+    /* 題目主卡片 */
+    .quiz-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--badge-bg);
+      color: var(--accent);
+      border: 1px solid var(--border);
+    }
+    .timer { font-size: 0.95rem; font-weight: 800; color: var(--gold); }
+
+    .q-text {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 1.02rem;
+      line-height: 1.5;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    /* 選項按鈕 */
+    .opts { display: flex; flex-direction: column; gap: 8px; }
+    .opt-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      text-align: left;
+      font-weight: 600;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .opt-btn:active { transform: scale(0.98); background: #1e293b; }
+    .opt-btn.correct { background: var(--success) !important; border-color: var(--success); color: #fff; }
+    .opt-btn.wrong { background: var(--danger) !important; border-color: var(--danger); color: #fff; }
+
+    /* 填空模式 */
+    .ctest-area { display: none; flex-direction: column; gap: 10px; }
+    .ctest-input {
+      background: var(--card);
+      border: 2px solid var(--accent);
+      color: #fff;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      outline: none;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    /* 深度解析情報面板 */
+    .deep-insight-card {
+      margin-top: 12px;
+      background: #090f1d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      display: none;
+    }
+    
+    .insight-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .freq-tag { color: var(--gold); font-weight: bold; font-size: 0.78rem; }
+    
+    .section-title {
+      font-weight: 800;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      margin-bottom: 3px;
+      font-size: 0.83rem;
+    }
+
+    .structure-box {
+      background: #111a2e;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #38bdf8;
+      font-size: 0.78rem;
+      margin-bottom: 6px;
+    }
+
+    .vocab-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+      font-size: 0.8rem;
+    }
+    .vocab-table td {
+      padding: 4px 0;
+      vertical-align: top;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .vocab-word { font-weight: 700; color: #fff; width: 35%; }
+    .vocab-desc { color: var(--sub); }
+
+    .voice-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* 底部操作鈕 */
+    .footer { margin-top: 10px; }
+    .btn-next {
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: #0b0f19;
+      font-size: 0.98rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: none;
+    }
+
+    /* 報告快顯 */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 15, 25, 0.95);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 100;
+    }
+    .modal-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- 模式切換 -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-play" onclick="changeMode('play')">🎯 實戰測驗</button>
+    <button class="tab-btn" id="tab-review" onclick="changeMode('review')">⚡ 錯題救援 (<span id="due-count">0</span>)</button>
+  </div>
+
+  <!-- 即時狀態欄 -->
+  <div class="status-card">
+    <div>
+      <div class="status-num" id="est-score">700</div>
+      <div class="status-label">預估落點</div>
+    </div>
+    <div>
+      <div class="status-num" style="color:var(--accent);" id="combo-txt">0</div>
+      <div class="status-label">連續答對</div>
+    </div>
+    <div>
+      <div class="status-num" style="color:var(--text);" id="speed-txt">0s</div>
+      <div class="status-label">平均破題</div>
+    </div>
+  </div>
+
+  <!-- 答題核心區 -->
+  <div class="quiz-box">
+    <div class="meta-row">
+      <span class="pill" id="cat-pill">題型載入中</span>
+      <span class="timer" id="timer-txt">15s</span>
+    </div>
+
+    <div class="q-text" id="q-content">題目載入中...</div>
+
+    <!-- 模式 A：四選一大按鈕 -->
+    <div class="opts" id="opts-container"></div>
+
+    <!-- 模式 B：錯題輸入救援 -->
+    <div class="ctest-area" id="ctest-container">
+      <div style="font-size:0.82rem; color:var(--gold); text-align:center;">💡 輸出型記憶：請拼出正確單字並按確認：</div>
+      <input type="text" class="ctest-input" id="word-input" placeholder="輸入單字" autocorrect="off" autocapitalize="none">
+    </div>
+
+    <!-- 升級版：深度解析與句型結構面板 -->
+    <div class="deep-insight-card" id="insight-box">
+      <div class="insight-header">
+        <span class="freq-tag" id="insight-freq">頻率：★★★★★ | 難度：650+</span>
+        <div class="voice-btn" onclick="playVoice()">🔊 美式發音</div>
+      </div>
+
+      <div class="section-title">📐 句型主幹公式化拆解</div>
+      <div class="structure-box" id="insight-struct">[S] + [V] + [O] ...</div>
+
+      <div class="section-title">💡 考點速解與陷阱避雷</div>
+      <div id="insight-exp" style="color:var(--text); margin-bottom:6px;"></div>
+
+      <div class="section-title">📚 核心單字與干擾項剖析</div>
+      <table class="vocab-table" id="insight-vocab"></table>
+
+      <div class="section-title">🔗 實戰必備搭配詞 (Collocation)</div>
+      <div id="insight-chunk" style="color:var(--gold); font-weight:600;"></div>
+    </div>
+  </div>
+
+  <!-- 下一步按鈕 -->
+  <div class="footer">
+    <button class="btn-next" id="next-btn" onclick="onNextClick()">進入下一題</button>
+  </div>
+</div>
+
+<!-- 簡明報告彈窗 -->
+<div class="modal" id="report-modal">
+  <div class="modal-box">
+    <div style="font-size:2rem; margin-bottom:6px;">🎉</div>
+    <h3 style="margin-bottom:4px; font-size:1.25rem;">30 題實戰結算</h3>
+    <p style="color:var(--sub); font-size:0.8rem; margin-bottom:14px;">多益作答神經網路已更新！</p>
+    
+    <div style="background:#090f1d; padding:16px; border-radius:12px; margin-bottom:14px;">
+      <div style="font-size:0.75rem; color:var(--sub);">預估多益閱讀分數</div>
+      <div style="font-size:2.6rem; font-weight:900; color:var(--gold);" id="final-score">780</div>
+      <div style="font-size:0.82rem; color:var(--accent); margin-top:2px;" id="final-level">商務菁英 (Blue)</div>
+    </div>
+
+    <div style="text-align:left; font-size:0.82rem; line-height:1.5; color:var(--sub); margin-bottom:18px;" id="final-advise"></div>
+
+    <button class="btn-next" style="display:block;" onclick="location.reload()">再刷一輪鞏固實力</button>
+  </div>
+</div>
+
+<script>
+// 包含深度資訊（難度、頻率、句型結構、單字清單與搭配詞）的題庫
+const questions = [
+  {
+    id: 1,
+    diff: 1,
+    cat: "詞性辨析 (修飾副詞)",
+    freq: "★★★★★ (每回必考 3-5 題)",
+    band: "550~650 目標題",
+    q: "The lead architect will inspect the construction site _______ before signing the contract.",
+    opts: ["thorough", "thoroughly", "thoroughness", "more thorough"],
+    ans: 1,
+    word: "thoroughly",
+    structure: "[主詞 The architect] + [動詞 will inspect] + [受詞 the site] + <副詞修飾語 _______> + <時間副詞子句>",
+    exp: "本句主幹完整（S+V+O），空格位於受詞 site 後方，需使用【副詞】修飾動詞 inspect。形容詞 thorough 無法修飾動詞；名詞 thoroughness 會造成雙受詞結構錯誤。",
+    vocabList: [
+      { w: "thoroughly (adv.)", d: "徹底地、詳盡地 [高頻副詞，詞尾 -ly 標誌]" },
+      { w: "inspect (v.)", d: "視察、檢查 (名詞為 inspection)" },
+      { w: "sign-off (n.)", d: "正式簽署批准" }
+    ],
+    chunk: "inspect ... thoroughly（徹底檢查） / conduct a thorough inspection"
+  },
+  {
+    id: 2,
+    diff: 1,
+    cat: "名詞詞性 (名詞字尾)",
+    freq: "★★★★★ (每回必考 2-3 題)",
+    band: "550~650 目標題",
+    q: "All registered participants must submit a written _______ to human resources by Friday.",
+    opts: ["confirm", "confirmed", "confirmation", "confirming"],
+    ans: 2,
+    word: "confirmation",
+    structure: "[主詞 All participants] + [助動+動 must submit] + <冠詞 a + 形容詞 written + [受詞名詞 _______]> + <介系詞片語>",
+    exp: "不定冠詞 a 與形容詞 written 之後，必須填入【可數名詞單數形】作為動詞 submit 的受詞。字尾 -tion 為典型名詞字尾。",
+    vocabList: [
+      { w: "confirmation (n.)", d: "確認書、證實 (字尾 -tion 為名詞)" },
+      { w: "written (adj.)", d: "書面的 (分詞轉形容詞)" },
+      { w: "human resources (n.)", d: "人力資源部 (常縮寫為 HR)" }
+    ],
+    chunk: "written confirmation（書面確認函） / receive confirmation of..."
+  },
+  {
+    id: 3,
+    diff: 2,
+    cat: "介系詞 vs 連接詞",
+    freq: "★★★★☆ (多益常考易混淆陷阱)",
+    band: "700~800 關鍵題",
+    q: "_______ torrential rain during the executive summit, attendee turnout reached record levels.",
+    opts: ["Despite", "Although", "Even though", "Nevertheless"],
+    ans: 0,
+    word: "Despite",
+    structure: "<介系詞片語 [Despite] + [名詞片語 torrential rain]> , [主詞 turnout] + [動詞 reached] + [受詞 levels].",
+    exp: "逗號前為名詞片語 torrential rain（無動詞），故空格必須選【介系詞】Despite。Although 與 Even though 為從屬連接詞（後方須接 S+V 子句）；Nevertheless 為副詞，不可連接名詞。",
+    vocabList: [
+      { w: "despite (prep.)", d: "儘管 (後接名詞/動名詞，等同 in spite of)" },
+      { w: "torrential (adj.)", d: "傾盆的、如豪雨般的 (常修飾 rain/downpour)" },
+      { w: "turnout (n.)", d: "出席人數、到場率" }
+    ],
+    chunk: "despite the rain（儘管下雨） / record turnout（創紀錄的出席人數）"
+  },
+  {
+    id: 4,
+    diff: 2,
+    cat: "動詞時態 (完成式指標)",
+    freq: "★★★★☆ (時態必備得分點)",
+    band: "700~800 關鍵題",
+    q: "Over the past five years, our international logistics branch _______ by nearly 40 percent.",
+    opts: ["grows", "has grown", "grew", "will grow"],
+    ans: 1,
+    word: "grown",
+    structure: "<時間介系詞片語 Over the past 5 years> , [主詞 our branch] + [動詞 has grown] + <程度副詞片語>.",
+    exp: "句首的【Over the past / In the last + 一段時間】是「現在完成式」的絕對信號詞，代表動作從過去持續累積到現在，故動詞必選 has grown。",
+    vocabList: [
+      { w: "logistics (n.)", d: "物流、後勤管理" },
+      { w: "over the past... (prep.)", d: "在過去……期間 (現在完成式標配)" },
+      { w: "branch (n.)", d: "分公司、分行" }
+    ],
+    chunk: "grow by 40%（成長了40%） / over the past decade（過去十年來）"
+  },
+  {
+    id: 5,
+    diff: 3,
+    cat: "介系詞 to + 動名詞",
+    freq: "★★★☆☆ (860分金色證書分水嶺)",
+    band: "850+ 金證陷阱題",
+    q: "Maintaining clear communication across teams is essential to _______ project bottlenecks.",
+    opts: ["preventing", "prevent", "prevention", "preventative"],
+    ans: 0,
+    word: "preventing",
+    structure: "[動名詞片語 Maintaining... 作主詞] + [動詞 is] + [形容詞 essential] + <介系詞片語 to + [動名詞 preventing] + [受詞 bottlenecks]>.",
+    exp: "【be essential to】中的 to 是【介系詞】而非不定詞！後方接有名詞受詞 project bottlenecks，因此必須使用【動名詞 (V-ing)】才能同時具備受詞並符合介系詞受詞位置。",
+    vocabList: [
+      { w: "bottleneck (n.)", d: "瓶頸、障礙 (專案管理核心單字)" },
+      { w: "essential (adj.)", d: "不可或缺的、至關重要的 (= vital, crucial)" },
+      { w: "prevent (v.)", d: "預防、防止 (名詞為 prevention)" }
+    ],
+    chunk: "be essential to + V-ing（對……至關重要） / clear bottlenecks（打通瓶頸）"
+  },
+  {
+    id: 6,
+    diff: 3,
+    cat: "否定副詞置首倒裝",
+    freq: "★★☆☆☆ (900+ 頂尖魔王考點)",
+    band: "900+ 金證神人題",
+    q: "Under no circumstances _______ authorized personnel disclose confidential patent files.",
+    opts: ["should", "they should", "should have", "will have"],
+    ans: 0,
+    word: "should",
+    structure: "<否定副詞片語 Under no circumstances> + [助動詞 should] + [主詞 personnel] + [原形動詞 disclose] + [受詞 files].",
+    exp: "當含有否定意義的副詞片語（Under no circumstances / Seldom / Rarely / Never）置於句首時，主要子句必須【倒裝】（助動詞 + 主詞 + 原形動詞），故選助動詞 should。",
+    vocabList: [
+      { w: "under no circumstances", d: "絕不、在任何情況下都不 (必倒裝)" },
+      { w: "personnel (n.)", d: "全體員工、人事人員 (集合名詞)" },
+      { w: "confidential (adj.)", d: "機密的、保密的" }
+    ],
+    chunk: "confidential files（機密文件） / disclose information（洩露資訊）"
+  }
+];
+
+// 本地存檔（SM-2 間隔記憶）
+const Memory = {
+  load() { return JSON.parse(localStorage.getItem("toeic_deep_mem")) || {}; },
+  save(data) { localStorage.setItem("toeic_deep_mem", JSON.stringify(data)); },
+  record(id, isCorrect) {
+    const mem = this.load();
+    const item = mem[id] || { stage: 0, nextTime: 0 };
+    if (isCorrect) {
+      item.stage++;
+      const gaps = [10 * 60 * 1000, 24 * 60 * 60 * 1000, 3 * 24 * 60 * 60 * 1000];
+      item.nextTime = Date.now() + (gaps[item.stage - 1] || 7 * 24 * 60 * 60 * 1000);
+    } else {
+      item.stage = 0;
+      item.nextTime = Date.now() + 5 * 60 * 1000;
+    }
+    mem[id] = item;
+    this.save(mem);
+  },
+  getDue() {
+    const mem = this.load();
+    const now = Date.now();
+    return questions.filter(q => mem[q.id] && mem[q.id].nextTime <= now);
+  }
+};
+
+let currentMode = 'play';
+let userLevel = 2;
+let combo = 0;
+let answeredCount = 0;
+let totalTime = 0;
+let currentQ = null;
+let qStartTime = 0;
+let timer = null;
+let timeLeft = 15;
+let isAnswered = false;
+
+function changeMode(mode) {
+  currentMode = mode;
+  document.getElementById("tab-play").classList.toggle("active", mode === 'play');
+  document.getElementById("tab-review").classList.toggle("active", mode === 'review');
+  startQuiz();
+}
+
+function startQuiz() {
+  clearInterval(timer);
+  document.getElementById("due-count").textContent = Memory.getDue().length;
+
+  if (currentMode === 'review') {
+    const dueList = Memory.getDue();
+    if (dueList.length === 0) {
+      alert("太棒了！目前沒有到期的錯題需要救援！先來實戰吧！");
+      changeMode('play');
+      return;
+    }
+    document.getElementById("opts-container").style.display = "none";
+    document.getElementById("ctest-container").style.display = "flex";
+    pickNextQuestion(dueList[0]);
+  } else {
+    document.getElementById("opts-container").style.display = "flex";
+    document.getElementById("ctest-container").style.display = "none";
+    pickNextQuestion();
+  }
+}
+
+function pickNextQuestion(fixedQ = null) {
+  if (answeredCount >= 30) {
+    showReport();
+    return;
+  }
+
+  if (fixedQ) {
+    currentQ = fixedQ;
+  } else {
+    const matches = questions.filter(q => q.diff === userLevel);
+    currentQ = matches[Math.floor(Math.random() * matches.length)] || questions[0];
+  }
+
+  isAnswered = false;
+  qStartTime = Date.now();
+
+  document.getElementById("cat-pill").textContent = currentQ.cat;
+  document.getElementById("q-content").textContent = currentQ.q;
+  document.getElementById("insight-box").style.display = "none";
+  document.getElementById("next-btn").style.display = "none";
+
+  if (currentMode === 'play') {
+    const box = document.getElementById("opts-container");
+    box.innerHTML = "";
+    currentQ.opts.forEach((opt, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "opt-btn";
+      btn.textContent = `${String.fromCharCode(65 + idx)}.  ${opt}`;
+      btn.onclick = () => onSelectOpt(idx);
+      box.appendChild(btn);
+    });
+  } else {
+    const input = document.getElementById("word-input");
+    input.value = "";
+    input.placeholder = `提示開頭: ${currentQ.word[0]}.......`;
+    input.onkeydown = (e) => { if (e.key === "Enter") onCtestSubmit(); };
+  }
+
+  timeLeft = 15;
+  document.getElementById("timer-txt").textContent = `${timeLeft}s`;
+  timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timer-txt").textContent = `${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      handleWrong("⚠️ 時間到！多益 Part 5 需在 15 秒內完成！");
+    }
+  }, 1000);
+}
+
+function onSelectOpt(idx) {
+  if (isAnswered) return;
+  clearInterval(timer);
+  isAnswered = true;
+
+  const cost = (Date.now() - qStartTime) / 1000;
+  totalTime += cost;
+  answeredCount++;
+
+  const isCorrect = (idx === currentQ.ans);
+  const btns = document.querySelectorAll(".opt-btn");
+  btns.forEach(b => b.style.pointerEvents = "none");
+
+  if (isCorrect) {
+    if (navigator.vibrate) navigator.vibrate(40);
+    btns[idx].classList.add("correct");
+    combo++;
+    if (combo >= 2 && userLevel < 3) userLevel++;
+    Memory.record(currentQ.id, true);
+  } else {
+    if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+    btns[idx].classList.add("wrong");
+    btns[currentQ.ans].classList.add("correct");
+    combo = 0;
+    if (userLevel > 1) userLevel--;
+    Memory.record(currentQ.id, false);
+  }
+
+  renderDeepInsight(isCorrect);
+}
+
+function onCtestSubmit() {
+  if (isAnswered) return;
+  const input = document.getElementById("word-input");
+  const val = input.value.trim().toLowerCase();
+  if (!val) return;
+
+  clearInterval(timer);
+  isAnswered = true;
+  answeredCount++;
+
+  const isCorrect = (val === currentQ.word.toLowerCase());
+  Memory.record(currentQ.id, isCorrect);
+  if (isCorrect) {
+    input.style.borderColor = "var(--success)";
+    combo++;
+  } else {
+    input.style.borderColor = "var(--danger)";
+    combo = 0;
+  }
+  renderDeepInsight(isCorrect);
+}
+
+function handleWrong(msg) {
+  isAnswered = true;
+  combo = 0;
+  if (userLevel > 1) userLevel--;
+  Memory.record(currentQ.id, false);
+  renderDeepInsight(false, msg);
+}
+
+// 渲染極深度解析面板
+function renderDeepInsight(isCorrect, extraMsg = "") {
+  // 頻率與難度
+  document.getElementById("insight-freq").textContent = `頻率：${currentQ.freq} | 目標：${currentQ.band}`;
+  
+  // 句型架構
+  document.getElementById("insight-struct").textContent = currentQ.structure;
+
+  // 考點精解
+  document.getElementById("insight-exp").innerHTML = `${extraMsg ? '<b style="color:var(--danger);">' + extraMsg + '</b><br>' : ''}${currentQ.exp}`;
+
+  // 單字清單表格
+  const table = document.getElementById("insight-vocab");
+  table.innerHTML = "";
+  currentQ.vocabList.forEach(item => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="vocab-word">${item.w}</td><td class="vocab-desc">${item.d}</td>`;
+    table.appendChild(tr);
+  });
+
+  // 搭配詞 Chunk
+  document.getElementById("insight-chunk").textContent = currentQ.chunk;
+
+  // 顯示面板與下一步按鈕
+  document.getElementById("insight-box").style.display = "block";
+  document.getElementById("next-btn").style.display = "block";
+
+  playVoice();
+  updateTopHUD();
+}
+
+function playVoice() {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const text = currentQ.q.replace("_______", currentQ.opts ? currentQ.opts[currentQ.ans] : currentQ.word);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.95;
+  window.speechSynthesis.speak(u);
+}
+
+function updateTopHUD() {
+  let est = 550 + (userLevel - 1) * 150 + Math.min(60, combo * 10);
+  if (est > 990) est = 990;
+  document.getElementById("est-score").textContent = est;
+  document.getElementById("combo-txt").textContent = combo;
+  const avg = answeredCount > 0 ? (totalTime / answeredCount).toFixed(1) : 0;
+  document.getElementById("speed-txt").textContent = `${avg}s`;
+  document.getElementById("due-count").textContent = Memory.getDue().length;
+}
+
+function onNextClick() {
+  startQuiz();
+}
+
+function showReport() {
+  const est = document.getElementById("est-score").textContent;
+  document.getElementById("final-score").textContent = est;
+  let level = "綠色證書 (550+)";
+  let advise = "基礎單字與時態穩健！建議深化『介系詞 vs 連接詞』的句型主幹拆解，避免依靠中文字意猜測。";
+  if (est >= 860) {
+    level = "金色證書 (860+) 達成！";
+    advise = "反射速度驚人！高階倒裝與介系詞 to 陷阱題全數攻破，已具備為 Part 7 預留 55 分鐘以上的實戰實力！";
+  } else if (est >= 700) {
+    level = "藍色證書 (700+)";
+    advise = "高頻詞彙量充沛，但在遇到長句後位修飾時破題秒數稍長。多利用『句型主幹公式』進行直覺抓主謂訓練！";
+  }
+  document.getElementById("final-level").textContent = level;
+  document.getElementById("final-advise").innerHTML = `<b>AI 學習短評：</b><br>${advise}`;
+  document.getElementById("report-modal").style.display = "flex";
+}
+
+startQuiz();
+</script>
+</body>
+</html>
